@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const {
   getPokemon,
-  getPokemonTypeByName,
-  getPokemonDescriptionByName,
-  getPokemonWeightByName,
-  getPokemonStatsByName,
+  getPokemonTypeById,
+  getPokemonDescriptionById,
+  getPokemonWeightById,
+  getPokemonStatsById,
   agregarPokemon,
   deletePokemonByName,
   putPokemonById,
@@ -13,12 +13,12 @@ const {
 } = require("../controllers/pokemon");
 const { verifyToken } = require("../middlewares/validate-jwt");
 
-router.get("/pokemon", verifyToken, getPokemon);
+router.get("/pokemon", getPokemon);
 router.get("/pokemon/:id", getPokemonById);
-router.get("/pokemon/:nombre/tipo", getPokemonTypeByName);
-router.get("/pokemon/:nombre/descripcion", getPokemonDescriptionByName);
-router.get("/pokemon/:nombre/peso", getPokemonWeightByName);
-router.get("/pokemon/:nombre/stats", getPokemonStatsByName);
+router.get("/pokemon/:id/tipo", getPokemonTypeById);
+router.get("/pokemon/:id/descripcion", getPokemonDescriptionById);
+router.get("/pokemon/:id/peso", getPokemonWeightById);
+router.get("/pokemon/:id/stats", getPokemonStatsById);
 router.post("/pokemon", agregarPokemon);
 router.delete("/pokemon/:nombre", deletePokemonByName);
 router.put("/pokemon/:id", putPokemonById);

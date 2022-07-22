@@ -1,29 +1,38 @@
 const pokemon = require("../models/pokemones");
+const { Pool } = require("pg");
 
-exports.getPokemon = (req, res) => {
-  const { type, minHP, minATK, minSATK, minSPD, id } = req.query;
-  let pokemonFiltrados = pokemon;
-  if (type) {
-    pokemonFiltrados = pokemonFiltrados.filter((el) =>
-      el.type.some((t) => t.toLowerCase() === type.toLowerCase())
-    );
-  }
-  if (id) {
-    pokemonFiltrados = pokemonFiltrados.find((el) => el.id == id);
-  }
-  if (minHP) {
-    pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.HP >= minHP);
-  }
-  if (minATK) {
-    pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.ATK >= minATK);
-  }
-  if (minSATK) {
-    pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SATK >= minSATK);
-  }
-  if (minSPD) {
-    pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SPD >= minSPD);
-  }
-  res.send(pokemonFiltrados);
+const pool = new Pool({
+  user: "postgres",
+  database: "movieacademy",
+  password: "47853751",
+});
+
+exports.getPokemon = async (req, res) => {
+  const { rows } = await pool.query("select * from public.categories");
+  // const { type, minHP, minATK, minSATK, minSPD, id } = req.query;
+  // let pokemonFiltrados = pokemon;
+  // if (type) {
+  //   pokemonFiltrados = pokemonFiltrados.filter((el) =>
+  //     el.type.some((t) => t.toLowerCase() === type.toLowerCase())
+  //   );
+  // }
+  // if (id) {
+  //   pokemonFiltrados = pokemonFiltrados.find((el) => el.id == id);
+  // }
+  // if (minHP) {
+  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.HP >= minHP);
+  // }
+  // if (minATK) {
+  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.ATK >= minATK);
+  // }
+  // if (minSATK) {
+  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SATK >= minSATK);
+  // }
+  // if (minSPD) {
+  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SPD >= minSPD);
+  // }
+  res.send(pokemon);
+  // res.send(rows);
 };
 
 exports.getPokemonById = (req, res) => {
@@ -38,61 +47,56 @@ exports.getPokemonById = (req, res) => {
   res.send({ ...unPokemon, next, prev });
 };
 
-exports.getPokemonTypeByName = (req, res) => {
-  const { nombre } = req.params;
-  const tipoPokemon = pokemon.find(
-    (e) => e.name.english.toLowerCase() === nombre.toLowerCase()
-  );
+exports.getPokemonTypeById = (req, res) => {
+  const { id } = req.params;
+  const tipoPokemon = pokemon.find((e) => e.id == id);
   res.send(tipoPokemon.type);
 };
 
-exports.getPokemonDescriptionByName = (req, res) => {
-  const { nombre } = req.params;
-  const tipoPokemon = pokemon.find(
-    (e) => e.name.english.toLowerCase() === nombre.toLowerCase()
-  );
+exports.getPokemonDescriptionById = (req, res) => {
+  const { id } = req.params;
+  const tipoPokemon = pokemon.find((e) => e.id == id);
   res.send(tipoPokemon.description);
 };
 
-exports.getPokemonWeightByName = (req, res) => {
-  const { nombre } = req.params;
-  const tipoPokemon = pokemon.find(
-    (e) => e.name.english.toLowerCase() === nombre.toLowerCase()
-  );
+exports.getPokemonWeightById = (req, res) => {
+  const { id } = req.params;
+  const tipoPokemon = pokemon.find((e) => e.id == id);
   res.send(tipoPokemon.profile.weight);
 };
 
-exports.getPokemonStatsByName = (req, res) => {
-  const { nombre } = req.params;
-  const unPokemon = pokemon.find(
-    (e) => e.name.english.toLowerCase() === nombre.toLowerCase()
-  );
-  res.send({ nombre: unPokemon.name.english, stats: unPokemon.base });
+exports.getPokemonStatsById = (req, res) => {
+  const { id } = req.params;
+  const unPokemon = pokemon.find((e) => e.id == id);
+  res.send(unPokemon.base);
 };
 
 exports.agregarPokemon = (req, res) => {
   const listaPokemon = pokemon;
   const {
     name,
+    id,
     type,
-    ability,
+    moves,
     HP,
     ATK,
+    DEF,
     SATK,
     SDEF,
     SPD,
     description,
     height,
     weight,
+    image,
   } = req.body;
   const pokemonAgregar = {
-    name: name,
-    type: type,
-    moves: ability,
-    base: { HP, ATK, SATK, SDEF, SPD },
+    name: { english: name },
+    id: id,
+    type: [type],
+    base: { HP, ATK, DEF, SATK, SDEF, SPD },
     description: description,
-    height: height,
-    weight: weight,
+    profile: { height, weight, ability: [moves] },
+    image: { hires: image },
   };
   listaPokemon.push(pokemonAgregar);
   res.send(listaPokemon[listaPokemon.length - 1]);
