@@ -1,4 +1,4 @@
-// const { Pool } = require("pg");
+const { Pool } = require("pg");
 const express = require("express");
 const pokemonRoutes = require("./routes/pokemon");
 const bodyParser = require("body-parser");
@@ -25,7 +25,7 @@ const authRouter = require("./routes/auth");
 
 // const pool = new Pool({
 //     user: "postgres",
-//     database: "prueba",
+//     database: "Pokemones",
 //     password: "47853751"
 // });
 
@@ -37,7 +37,7 @@ app.use("/", pokemonRoutes);
 app.use("/", authRouter);
 
 app.get("/", (req, res) => {
-    res.send("hola");
+  res.send("hola");
 });
 
 // app.post(
@@ -108,6 +108,6 @@ app.get('/pokemon/:nombre/peso', (req, res) => {
 */
 
 app.listen(1234, async () => {
-    // await pool.connect();
-    console.log("Server listening in http://localhost:1234");
+  // await pool.connect();
+  console.log("Server listening in http://localhost:1234");
 });

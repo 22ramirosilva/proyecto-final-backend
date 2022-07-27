@@ -1,50 +1,48 @@
-const pokemon = require("../models/pokemones");
+// const pokemon = require("../models/pokemones");
 const { Pool } = require("pg");
 
 const pool = new Pool({
   user: "postgres",
-  database: "movieacademy",
+  database: "pokemones",
   password: "47853751",
 });
 
 exports.getPokemon = async (req, res) => {
-  const { rows } = await pool.query("select * from public.categories");
-  // const { type, minHP, minATK, minSATK, minSPD, id } = req.query;
-  // let pokemonFiltrados = pokemon;
-  // if (type) {
-  //   pokemonFiltrados = pokemonFiltrados.filter((el) =>
-  //     el.type.some((t) => t.toLowerCase() === type.toLowerCase())
-  //   );
-  // }
-  // if (id) {
-  //   pokemonFiltrados = pokemonFiltrados.find((el) => el.id == id);
-  // }
-  // if (minHP) {
-  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.HP >= minHP);
-  // }
-  // if (minATK) {
-  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.ATK >= minATK);
-  // }
-  // if (minSATK) {
-  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SATK >= minSATK);
-  // }
-  // if (minSPD) {
-  //   pokemonFiltrados = pokemonFiltrados.filter((el) => el.base.SPD >= minSPD);
-  // }
+  const { rows } = await pool.query(
+    "SELECT pokemones.*, array_agg(distinct types.type_name) as types, array_agg(distinct abilities.name) as abilities, json_agg(distinct base.*) as base FROM pokemones INNER JOIN types ON pokemones.id = types.pokemonid JOIN base  on pokemones.id = base.pokemon_id  JOIN abilities  on pokemones.id = abilities.pokemones_id   group by pokemones.id, base.id order by pokemones.id; "
+  );
+  const pokemon = rows.map((r) => {
+    const { hp, atk, def, satk, sdef, spd } = r.base[0];
+    return { ...r, base: { hp, atk, def, satk, sdef, spd } };
+  });
+
   res.send(pokemon);
-  // res.send(rows);
 };
 
-exports.getPokemonById = (req, res) => {
+exports.getPokemonById = async (req, res) => {
   const { id } = req.params;
-  const pokemonIndex = pokemon.findIndex((e) => e.id == id);
+  const { rows } = await pool.query(
+    "SELECT pokemones.*, array_agg(distinct types.type_name) as types, array_agg(distinct abilities.name) as abilities, json_agg(  base ) as base FROM pokemones INNER JOIN types ON pokemones.id = types.pokemonid JOIN base on pokemones.id = base.pokemon_id  JOIN abilities  on pokemones.id = abilities.pokemones_id where pokemones.id = $1  group by pokemones.id, base.id order by pokemones.id; ",
+    [id]
+  );
+  const { rows: rowsNext } = await pool.query(
+    "SELECT id FROM pokemones where id = $1 ",
+    [1 + parseInt(id)]
+  );
+  const { rows: rowsPrev } = await pool.query(
+    "SELECT id FROM pokemones where id = $1 ",
+    [parseInt(id) - 1]
+  );
 
-  const unPokemon = pokemon[pokemonIndex];
-  const next =
-    pokemonIndex !== pokemon.lenght - 1 ? pokemon[pokemonIndex + 1].id : null;
-  const prev = pokemonIndex !== 0 ? pokemon[pokemonIndex - 1].id : null;
+  const next = rowsNext[0]?.id;
+  const prev = rowsPrev[0]?.id;
 
-  res.send({ ...unPokemon, next, prev });
+  const pokemon = rows.map((r) => {
+    const { hp, atk, def, satk, sdef, spd } = r.base[0];
+    return { ...r, base: { hp, atk, def, satk, sdef, spd } };
+  });
+
+  res.send({ ...pokemon[0], next, prev });
 };
 
 exports.getPokemonTypeById = (req, res) => {
@@ -72,7 +70,6 @@ exports.getPokemonStatsById = (req, res) => {
 };
 
 exports.agregarPokemon = (req, res) => {
-  const listaPokemon = pokemon;
   const {
     name,
     id,
@@ -89,17 +86,25 @@ exports.agregarPokemon = (req, res) => {
     weight,
     image,
   } = req.body;
-  const pokemonAgregar = {
-    name: { english: name },
-    id: id,
-    type: [type],
-    base: { HP, ATK, DEF, SATK, SDEF, SPD },
-    description: description,
-    profile: { height, weight, ability: [moves] },
-    image: { hires: image },
-  };
-  listaPokemon.push(pokemonAgregar);
-  res.send(listaPokemon[listaPokemon.length - 1]);
+
+  pool.query(
+    "INSERT INTO pokemones (id, name, weight, height, image, description) values ($1, $2, $3, $4, $5, $6)",
+    [id, name, weight, height, image, description]
+  );
+  pool.query("INSERT INTO abilities (pokemones_id,name) values ($1,$2)", [
+    id,
+    moves,
+  ]);
+  pool.query(
+    "INSERT INTO base (pokemon_id, hp, atk, def, satk, sdef, spd) values ($1, $2, $3, $4, $5, $6, $7)",
+    [id, HP, ATK, DEF, SATK, SDEF, SPD]
+  );
+  pool.query("INSERT INTO types (pokemonid, type_name) values ($1, $2)", [
+    id,
+    type,
+  ]);
+
+  res.json({ id: id, mensaje: "el pokemon fue registrado correctamente" });
 };
 
 exports.deletePokemonByName = (req, res) => {
