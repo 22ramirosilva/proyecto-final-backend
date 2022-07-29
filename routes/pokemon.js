@@ -7,7 +7,7 @@ const {
   getPokemonWeightById,
   getPokemonStatsById,
   agregarPokemon,
-  deletePokemonByName,
+  deletePokemonById,
   putPokemonById,
   getPokemonById,
 } = require("../controllers/pokemon");
@@ -20,7 +20,7 @@ router.get("/pokemon/:id/descripcion", getPokemonDescriptionById);
 router.get("/pokemon/:id/peso", getPokemonWeightById);
 router.get("/pokemon/:id/stats", getPokemonStatsById);
 router.post("/pokemon", agregarPokemon);
-router.delete("/pokemon/:nombre", deletePokemonByName);
+router.delete("/pokemon/:id", deletePokemonById);
 router.put("/pokemon/:id", putPokemonById);
 
 module.exports = router;

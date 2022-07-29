@@ -1,9 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { verifyToken } = require("../middlewares/validate-jwt");
 const router = express.Router();
-const { postUsuario, getUsuarios, postLogin } = require("../controllers/auth");
+const { postUsuario, postLogin } = require("../controllers/auth");
 const { body } = require("express-validator");
 
 router.post(
@@ -16,10 +15,9 @@ router.post(
     }
     return true;
   }),
+
   postUsuario
 );
-
-router.get("/usuarios", verifyToken, getUsuarios);
 
 router.post("/login", body("mail").trim(), postLogin);
 
