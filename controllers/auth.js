@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { TOKEN_SECRET } = require("../middlewares/validate-jwt");
 const { Pool } = require("pg");
-const { body, validationResult } = require("express-validator");
+// const { body, validationResult } = require("express-validator");
 
 const pool = new Pool({
   user: "postgres",
@@ -22,7 +22,6 @@ const pool = new Pool({
 
 exports.postUsuario = async (req, res) => {
   const errors = validationResult(req);
-  console.log(errors);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
@@ -44,13 +43,7 @@ exports.postUsuario = async (req, res) => {
   res.json({ success: true });
 };
 
-// exports.getUsuarios = async (req, res) => {
-//   console.log(req.user);
-//   res.json({ error: null, usuarios });
-// };
-
 exports.postLogin = async (req, res) => {
-  // const user = usuarios.find((u) => u.mail === req.body.mail);
   const { rows } = await pool.query(
     "SELECT name, email, password FROM public.usuarios where email = $1",
     [req.body.mail]

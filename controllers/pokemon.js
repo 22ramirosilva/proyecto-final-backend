@@ -1,4 +1,3 @@
-// const pokemon = require("../models/pokemones");
 const { Pool } = require("pg");
 
 const pool = new Pool({
@@ -31,8 +30,8 @@ exports.getPokemonById = async (req, res) => {
       "SELECT id FROM pokemones where eliminado = false order by number"
     );
     const pokemonIndex = pokemones.findIndex((p) => id == p.id);
-    const next = pokemones[pokemonIndex + 1]?.id;
     const prev = pokemones[pokemonIndex - 1]?.id;
+    const next = pokemones[pokemonIndex + 1]?.id;
 
     const pokemon = rows.map((r) => {
       const { hp, atk, def, satk, sdef, spd } = r.base[0];
@@ -43,30 +42,6 @@ exports.getPokemonById = async (req, res) => {
   } else {
     res.sendStatus(404);
   }
-};
-
-exports.getPokemonTypeById = (req, res) => {
-  const { id } = req.params;
-  const tipoPokemon = pokemon.find((e) => e.id == id);
-  res.send(tipoPokemon.type);
-};
-
-exports.getPokemonDescriptionById = (req, res) => {
-  const { id } = req.params;
-  const tipoPokemon = pokemon.find((e) => e.id == id);
-  res.send(tipoPokemon.description);
-};
-
-exports.getPokemonWeightById = (req, res) => {
-  const { id } = req.params;
-  const tipoPokemon = pokemon.find((e) => e.id == id);
-  res.send(tipoPokemon.profile.weight);
-};
-
-exports.getPokemonStatsById = (req, res) => {
-  const { id } = req.params;
-  const unPokemon = pokemon.find((e) => e.id == id);
-  res.send(unPokemon.base);
 };
 
 exports.agregarPokemon = async (req, res) => {
@@ -112,31 +87,4 @@ exports.deletePokemonById = async (req, res) => {
   const { id } = req.params;
   await pool.query("UPDATE pokemones SET eliminado=true WHERE id = $1", [id]);
   res.sendStatus(200);
-};
-
-exports.putPokemonById = (req, res) => {
-  const { id } = req.params;
-  const { name, type, height, weight } = req.query;
-  const pokemonIndice = pokemon.findIndex((e) => e.id == id);
-
-  if (name) {
-    pokemon[pokemonIndice].name.english = name;
-  }
-  if (type) {
-    pokemon[pokemonIndice].type = type;
-  }
-  if (height) {
-    pokemon[pokemonIndice].profile.height = height;
-  }
-  if (weight) {
-    pokemon[pokemonIndice].profile.weight = weight;
-  }
-
-  // {Object.key (pokemon.stats).map(
-  //     ([nombreDeLaProp, valorDeLaProp]) => (
-  //       <p style={{ color: pokemon.color }}>{nombreDeLaProp}</p>
-  //     )
-  //   )}
-
-  res.send(pokemon[pokemonIndice]);
 };
