@@ -3,7 +3,7 @@ const { Pool } = require("pg");
 const pool = new Pool({
   user: "postgres",
   database: "pokemones",
-  password: "47853751",
+  password: "",
 });
 
 exports.getPokemon = async (req, res) => {

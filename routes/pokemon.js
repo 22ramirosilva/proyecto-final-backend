@@ -10,7 +10,7 @@ const { verifyToken } = require("../middlewares/validate-jwt");
 
 router.get("/pokemon", getPokemon);
 router.get("/pokemon/:id", getPokemonById);
-router.post("/pokemon", agregarPokemon);
-router.delete("/pokemon/:id", deletePokemonById);
+router.post("/pokemon", verifyToken, agregarPokemon);
+router.delete("/pokemon/:id", verifyToken, deletePokemonById);
 
 module.exports = router;
